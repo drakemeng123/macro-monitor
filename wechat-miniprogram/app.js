@@ -1,7 +1,7 @@
 /* ================= 数据接口配置 =================
-   线上默认地址（已部署，带访问凭据 sharecode，必须整条保留）
+   线上默认地址（GitHub Pages 静态接口，长期有效、无需凭据）
    本地调试可改成 http://127.0.0.1:8000，并在开发者工具勾选「不校验合法域名」 */
-const ONLINE_API_BASE = 'https://a88818a225005d7a1.app.workbuddy.host/api/dashboard?sharecode=GNZYA6LUMZ';
+const ONLINE_API_BASE = 'https://drakemeng123.github.io/macro-monitor/mp';
 const DEFAULT_API_BASE = ONLINE_API_BASE;
 
 App({

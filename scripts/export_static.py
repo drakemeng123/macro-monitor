@@ -63,6 +63,9 @@ def main() -> None:
 
     print("正在抓取行情数据…")
     payload = build_data()
+    # 静态文件也要带上字段别名，否则前端与小程序取不到时间
+    payload.setdefault("now", payload.get("generated_at"))
+    payload.setdefault("curve_date", next((c["date"] for c in payload.get("curve", []) if c.get("key") == "DGS10"), None))
     metrics = payload.get("metrics") or {}
     if len(metrics) < 4:
         raise SystemExit(f"数据不完整，仅拿到 {len(metrics)} 个指标，已中止（避免发布残缺站点）")
