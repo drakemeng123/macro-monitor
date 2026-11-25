@@ -11,11 +11,12 @@
 小程序默认已经连线上数据，位置在 `app.js` 第 5 行：
 
 ```js
-const ONLINE_API_BASE = 'https://a88818a225005d7a1.app.workbuddy.host/api/dashboard?sharecode=GNZYA6LUMZ';
+const ONLINE_API_BASE = 'https://drakemeng123.github.io/macro-monitor/mp';
 ```
 
-- 链接里的 `?sharecode=...` 是访问凭据，**不能删**，删了会返回 403。
+- 这是 GitHub Pages 静态接口，长期有效，**不需要任何访问凭据**。
 - 用户在「数据」页可以自己改接口地址；改过之后以本机保存的为准，想恢复线上地址可在弹窗里重新粘贴上面这串。
+- 数据由 GitHub Actions 每天 09:00 / 17:00 自动更新，页面上的「更新于」即快照时间。
 
 ---
 
@@ -36,7 +37,7 @@ const ONLINE_API_BASE = 'https://a88818a225005d7a1.app.workbuddy.host/api/dashbo
 
 | 类型 | 填写内容 |
 |---|---|
-| request 合法域名 | `https://a88818a225005d7a1.app.workbuddy.host` |
+| request 合法域名 | `https://drakemeng123.github.io` |
 
 填域名即可，**不要带路径、不要带参数、不要带 sharecode**。
 
@@ -92,7 +93,11 @@ const ONLINE_API_BASE = 'https://a88818a225005d7a1.app.workbuddy.host/api/dashbo
 
 ## 关于「固定域名」
 
-你现在用的 `a88818a225005d7a1.app.workbuddy.host` 是沙箱托管地址，**适合现在测试，不适合做正式上线域名**：它带 sharecode 访问凭据，也无法做微信后台的域名所有权校验。
+你现在用的是 `drakemeng123.github.io`（GitHub Pages 免费子域名），**永久有效、免备案、无需凭据**，可以直接作为小程序正式版的接口域名。
+
+唯一注意：微信后台校验域名所有权时需要放一个 `XXXXXXXX.txt` 文件，GitHub Pages 无法处理这种任意文件的上传。
+解决办法是在小程序后台的校验页面选择 **「校验文件下载后，上传到域名根目录」以外的其他校验方式**（如 DNS 或 HTML 标签校验），
+或改用带自己域名的托管方式。
 
 正式版建议这样（也是「固定域名」的正解）：
 
