@@ -1,0 +1,64 @@
+name: 更新行情并发布静态站点
+
+on:
+  schedule:
+    # GitHub 使用 UTC；对应北京时间 09:00 与 17:00
+    - cron: "0 1,9 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "app.py"
+      - "scripts/**"
+      - "static/**"
+      - "static-site/**"
+      - ".github/workflows/pages.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 抓取行情并生成静态站点
+        run: python scripts/export_static.py
+
+      - name: 同时更新小程序数据文件
+        run: python scripts/export_mp_data.py
+        continue-on-error: true
+
+      - name: 启用 GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true          # 首次运行时自动在仓库设置里开启 Pages，免去手动点选
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: static-site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

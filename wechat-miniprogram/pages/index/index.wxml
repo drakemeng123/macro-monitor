@@ -1,0 +1,159 @@
+<view class="app-shell">
+  <view class="topbar">
+    <view class="brand">
+      <view class="brand-mark"><image class="brand-icon" src="/images/icon.png" mode="aspectFit" /></view>
+      <view><view class="brand-name">宏观哨兵</view><view class="brand-en">MACRO SENTINEL</view></view>
+    </view>
+    <view class="header-actions">
+      <view class="live-chip"><view class="live-dot"></view><text>{{connectionText}}</text></view>
+      <view class="icon-btn" bindtap="refreshAll">
+        <image class="refresh-icon {{loading ? 'rotating' : ''}}" src="/images/refresh.png" mode="aspectFit" />
+      </view>
+    </view>
+  </view>
+
+  <view class="scroll-body" id="scrollBody">
+    <view class="container page-wrap">
+      <block wx:if="{{view === 'overview' || view === 'trend'}}">
+        <view class="hero">
+          <view class="hero-main">
+            <view class="eyebrow">Daily macro monitor</view>
+            <h1>今天，市场在定价什么？</h1>
+            <p class="hero-sub">{{heroSummary}}</p>
+          </view>
+          <view class="hero-meta">
+            <view class="hero-date">{{todayDate}}</view>
+            <view class="updated">{{updatedAt}}</view>
+          </view>
+        </view>
+
+        <view id="errorBanner" class="error-banner" wx:if="{{notice}}">
+          <text wx:if="{{notice.text}}">{{notice.text}}</text>
+          <text wx:if="{{notice.action}}" class="notice-link" bindtap="setApiBase">{{notice.action}}</text>
+        </view>
+
+        <view class="metric-grid">
+          <view wx:for="{{metrics}}" wx:key="key" class="metric-card {{selectedKey === item.key ? 'active' : ''}}" data-key="{{item.key}}" bindtap="selectMetric">
+            <view class="metric-head"><text class="metric-name">{{item.name}}</text><text class="metric-index">0{{index + 1}}</text></view>
+            <view class="metric-symbol">{{item.symbol}}</view>
+            <view class="metric-value">{{item.valueText}}<text class="metric-unit">{{item.unit}}</text></view>
+            <view class="metric-foot">
+              <text class="change {{item.changeClass}}">{{item.changeText}}</text>
+              <view class="spark"><image class="spark-img" src="{{item.spark}}" mode="aspectFit" /></view>
+            </view>
+            <view class="metric-time">行情 {{item.asofText}}</view>
+          </view>
+        </view>
+
+        <view class="dashboard-grid">
+          <view class="panel chart-panel" id="chartPanel">
+            <view class="panel-head">
+              <view><view class="panel-title">{{chartTitle}}</view><view class="panel-desc">{{chartSubtitle}}</view></view>
+              <view class="range-tabs">
+                <view wx:for="{{ranges}}" wx:key="value" class="range-tab {{range === item.value ? 'active' : ''}}" data-range="{{item.value}}" bindtap="selectRange">{{item.label}}</view>
+              </view>
+            </view>
+            <view class="chart-stats">
+              <view><view class="stat-label">区间涨跌</view><view class="stat-value {{periodCls}}">{{periodText}}</view></view>
+              <view><view class="stat-label">区间最高</view><view class="stat-value">{{highText}}</view></view>
+              <view><view class="stat-label">区间最低</view><view class="stat-value">{{lowText}}</view></view>
+            </view>
+            <view class="chart-wrap">
+              <canvas type="2d" id="trendCanvas" class="trend-canvas" bindtouchmove="onTouch" bindtouchend="onTouchEnd"></canvas>
+              <view class="chart-tooltip" wx:if="{{tooltip.show}}">
+                <text>{{tooltip.date}}　</text><text class="tip-strong">{{tooltip.value}}</text><text> {{selected.unit}}</text>
+              </view>
+            </view>
+            <view class="chart-foot">
+              <text class="foot-source">数据来源：{{selected.source}}</text>
+              <view class="text-btn" bindtap="copyCsv"><text>复制 CSV</text></view>
+            </view>
+          </view>
+
+          <view class="side-stack">
+            <view class="panel brief-panel">
+              <view class="panel-title">今日观察</view>
+              <view class="panel-desc">基于当日数据自动生成，不构成预测</view>
+              <view class="brief-list">
+                <view class="brief-row" wx:for="{{brief}}" wx:key="index">
+                  <text class="brief-num">0{{index + 1}}</text><text class="brief-text">{{item}}</text>
+                </view>
+              </view>
+              <view class="brief-tag">✓ 规则可解释 · 非投资评级</view>
+            </view>
+            <view class="panel curve-panel">
+              <view class="curve-head"><view class="panel-title">美债收益率曲线</view><text class="curve-date">{{curveDate}}</text></view>
+              <view class="curve-chart">
+                <view class="curve-item" wx:for="{{curve}}" wx:key="label">
+                  <text class="curve-value">{{item.value}}</text>
+                  <view class="curve-bar-track"><view class="curve-bar" style="height:{{item.percent}}%"></view></view>
+                  <text class="curve-label">{{item.label}}</text>
+                </view>
+              </view>
+              <view class="curve-spread"><text>10Y − 2Y 期限利差</text><text class="spread-strong">{{curveSpread}}</text></view>
+            </view>
+          </view>
+        </view>
+      </block>
+
+      <block wx:if="{{view === 'alerts'}}">
+        <view class="eyebrow">Price alerts</view>
+        <view class="section-title">涨跌提醒</view>
+        <view class="section-lead">按你的关注阈值监测日涨跌。打开或下拉小程序时检测，设置保存在当前设备。</view>
+        <view class="alert-summary">
+          <view><view class="alert-sum-title">本地监测已就绪</view><view class="alert-sum-desc">金价与美元指数按百分比；美债按基点（bp）。小程序关闭后不会发送后台推送。</view></view>
+          <view class="alert-count">{{alertCount}}</view>
+        </view>
+        <view class="alert-settings">
+          <view class="alert-item" wx:for="{{alerts}}" wx:key="key">
+            <view class="alert-item-head">
+              <view><view class="alert-item-title">{{item.name}}</view><view class="panel-desc">当前 {{item.current}}</view></view>
+              <switch checked="{{item.enabled}}" color="#176f5c" data-key="{{item.key}}" bindchange="toggleAlert" />
+            </view>
+            <view class="threshold-row">日波动达到<input class="threshold-input" type="number" value="{{item.threshold}}" data-key="{{item.key}}" bindblur="changeThreshold" /><text>{{item.unitText}}</text>时提醒</view>
+          </view>
+        </view>
+        <view class="save-btn" bindtap="saveAlerts">保存提醒设置</view>
+        <view class="alert-results">
+          <view class="panel-title alert-result-title">本次检测结果</view>
+          <block wx:if="{{triggered.length}}">
+            <view class="alert-result" wx:for="{{triggered}}" wx:key="name">
+              <view class="alert-result-icon">!</view>
+              <view><view class="result-name">{{item.name}} 已触及阈值</view><view class="result-desc">{{item.text}}</view></view>
+            </view>
+          </block>
+          <view class="empty-state" wx:else>暂无触及阈值的指标。开启提醒并保存后，会在每次刷新时自动检测。</view>
+        </view>
+      </block>
+
+      <block wx:if="{{view === 'sources'}}">
+        <view class="eyebrow">Data & methodology</view>
+        <view class="section-title">数据与方法</view>
+        <view class="section-lead">每个数字都保留来源与行情时间。接口异常时展示最近一次有效数据，不用估算值填补。</view>
+        <view class="source-grid">
+          <view class="source-card" wx:for="{{sources}}" wx:key="name">
+            <view class="source-top"><view class="source-name">{{item.name}}</view><text class="source-status">{{item.status}}</text></view>
+            <view class="source-use">{{item.usage}}</view>
+            <view class="source-link" bindtap="copySource" data-url="{{item.url}}">{{item.linkText}} ↗</view>
+          </view>
+        </view>
+        <view class="method-panel">
+          <view class="panel-title">监测机制</view>
+          <view class="method-grid">
+            <view class="method-item"><view class="method-strong">01 · 定时抓取</view><view class="method-p">服务端每 30 分钟刷新黄金与美元指数；小程序打开即拉最新，并保留本机缓存。</view></view>
+            <view class="method-item"><view class="method-strong">02 · 每日快照</view><view class="method-p">每日有效数据保存为快照；历史趋势使用公开日线，节假日不虚构交易数据。</view></view>
+            <view class="method-item"><view class="method-strong">03 · 异常降级</view><view class="method-p">上游失败时展示最近有效缓存并标记；美债收益率按美国交易日更新，周末与前值相同。</view></view>
+          </view>
+          <view class="disclaimer">免责声明：行情可能延迟，免费公开接口可能调整或限流。本工具仅用于个人信息整理与宏观观察，不构成投资建议。上海金 Au99.99 与品牌金饰零售价不是同一价格口径。</view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="bottom-nav">
+    <view wx:for="{{navs}}" wx:key="key" class="nav-btn {{view === item.key ? 'active' : ''}}" data-key="{{item.key}}" bindtap="switchView">
+      <image class="nav-icon" src="{{view === item.key ? item.iconActive : item.icon}}" mode="aspectFit" />
+      <text>{{item.label}}</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+data/latest.json
+data/snapshots/
+data/mp_export.json
+.DS_Store

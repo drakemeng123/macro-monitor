@@ -1,0 +1,16 @@
+{
+  "pages": [
+    "pages/index/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "宏观哨兵",
+    "navigationBarBackgroundColor": "#f5f6f2",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f6f2",
+    "backgroundTextStyle": "dark",
+    "enablePullDownRefresh": false
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

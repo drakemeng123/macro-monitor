@@ -1,0 +1,28 @@
+{
+  "description": "宏观哨兵微信小程序工程。用微信开发者工具导入本目录即可；接口地址在 app.js 的 DEFAULT_API_BASE 修改。需要合法 HTTPS 域名，本地调试请在开发者工具中勾选「不校验合法域名」。",
+  "projectname": "macro-sentinel",
+  "appid": "touristappid",
+  "compileType": "miniprogram",
+  "libVersion": "3.5.0",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "ignoreUploadUnusedFiles": true
+  },
+  "condition": {},
+  "packOptions": {
+    "ignore": [
+      {
+        "type": "folder",
+        "value": ".git"
+      },
+      {
+        "type": "file",
+        "value": "README-wechat.md"
+      }
+    ]
+  }
+}
