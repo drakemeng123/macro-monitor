@@ -1,0 +1,38 @@
+name: 每日自动提交（保持定时任务活跃）
+
+# 说明：
+# GitHub 免费账号的定时任务会在仓库 60 天无提交后自动暂停。
+# 这个工作流每天往 data/heartbeat.json 写一行时间戳并提交，让仓库保持活跃。
+# 与 pages.yml 相互独立，不会影响页面内容。
+
+on:
+  schedule:
+    # 北京时间每天 08:30（UTC 00:30）
+    - cron: "30 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 写入时间戳
+        run: |
+          mkdir -p data
+          printf '{"updated":"%s"}\n' "$(TZ=Asia/Shanghai date +'%Y-%m-%d %H:%M:%S')" > data/heartbeat.json
+          # 同时把当天的行情快照留档，方便回溯
+          cp static-site/data/dashboard.json "data/snapshot-$(TZ=Asia/Shanghai date +%Y-%m-%d).json" 2>/dev/null || true
+          ls -la data
+
+      - name: 提交
+        run: |
+          git config user.name "macro-sentinel-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data
+          git diff --staged --quiet && echo "无变化，跳过提交" && exit 0
+          git commit -m "chore: 每日心跳 $(TZ=Asia/Shanghai date +'%Y-%m-%d')"
+          git push
